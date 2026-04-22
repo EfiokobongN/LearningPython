@@ -17,7 +17,7 @@ def sendMail(receiver, body):
             server.ehlo()
             server.starttls()
             server.ehlo()
-            server.login('name', 'password')
+            server.login('4b2f3b94bc9863', '93fa9ca3c917fc')
             server.send_message(msg)
         print("Email sent successfully. Check your Mailtrap inbox.")
     except Exception as error:
