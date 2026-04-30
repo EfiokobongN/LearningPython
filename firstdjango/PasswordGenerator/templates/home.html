@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --acid: #C8FF00;
+            --dark: #0A0A0A;
+            --card: #111111;
+            --border: #222222;
+            --muted: #555555;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background-color: var(--dark);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background-image:
+                radial-gradient(ellipse 60% 40% at 80% 10%, rgba(200,255,0,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 10% 90%, rgba(200,255,0,0.04) 0%, transparent 50%);
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 0 80px rgba(200,255,0,0.04), 0 40px 60px rgba(0,0,0,0.5);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(200,255,0,0.08);
+            border: 1px solid rgba(200,255,0,0.2);
+            color: var(--acid);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 1.25rem;
+        }
+
+        .badge-dot {
+            width: 6px; height: 6px;
+            background: var(--acid);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.4rem;
+        }
+
+        h1 span { color: var(--acid); }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Dropdown */
+        .styled-select {
+            width: 100%;
+            background: #161616;
+            border: 1px solid var(--border);
+            color: #fff;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            outline: none;
+            margin-bottom: 1.75rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C8FF00' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            transition: border-color 0.15s ease;
+        }
+
+        .styled-select:focus { border-color: rgba(200,255,0,0.5); }
+        .styled-select option { background: #161616; color: #fff; }
+
+        /* Checkboxes */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            background: #161616;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .option-item:hover { border-color: #333; }
+
+        .option-item.checked {
+            border-color: rgba(200,255,0,0.35);
+            background: rgba(200,255,0,0.05);
+        }
+
+        .custom-check {
+            width: 18px; height: 18px;
+            border-radius: 5px;
+            border: 1.5px solid #444;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+
+        .option-item.checked .custom-check {
+            background: var(--acid);
+            border-color: var(--acid);
+        }
+
+        .check-icon { display: none; width: 10px; height: 10px; }
+        .option-item.checked .check-icon { display: block; }
+
+        .option-label { font-size: 0.82rem; font-weight: 600; color: #aaa; }
+        .option-item.checked .option-label { color: #fff; }
+        .option-icon { font-size: 0.85rem; margin-left: auto; color: #555; font-family: 'Space Mono', monospace; }
+        .option-item.checked .option-icon { color: var(--acid); }
+
+        /* Generate button */
+        .generate-btn {
+            width: 100%;
+            background: var(--acid);
+            color: #000;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
+            padding: 1rem;
+            border-radius: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .generate-btn:hover {
+            background: #d4ff1a;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 30px rgba(200,255,0,0.25);
+        }
+
+        .generate-btn:active { transform: translateY(0); }
+
+        /* Password output */
+        .output-wrapper {
+            margin-top: 1.5rem;
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            padding: 1.25rem 1.25rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .password-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            color: var(--acid);
+            word-break: break-all;
+            line-height: 1.6;
+        }
+
+        .output-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .strength-bar { display: flex; gap: 4px; align-items: center; }
+
+        .strength-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-right: 0.5rem;
+        }
+
+        .strength-seg {
+            height: 3px;
+            width: 28px;
+            border-radius: 999px;
+            background: #222;
+        }
+
+        .strength-seg.on { background: var(--acid); }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.85rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .copy-btn:hover { border-color: var(--acid); color: var(--acid); }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.75rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+
+        <!-- Header -->
+        <div class="badge">
+            <span class="badge-dot"></span>
+            Secure Generator
+        </div>
+        <h1>Strong <span>Passwords</span><br>On Demand.</h1>
+        <p class="subtitle">Pick your options and hit generate.</p>
+
+        <hr class="divider">
+
+        <form method="POST" action="">
+            {% csrf_token %}
+
+            <!-- Length Dropdown -->
+            <p class="section-label">Password Length</p>
+            <select name="length" class="styled-select">
+                <option value="" disabled {% if not selected_length %}selected{% endif %}>— Select Password Length —</option>
+                {% for l in lengths %}
+                <option value="{{ l }}" {% if selected_length == l %}selected{% endif %}>{{ l }} Long</option>
+                {% endfor %}
+            </select>
+
+            <!-- Character Type Checkboxes -->
+            <p class="section-label">Character Types</p>
+            <div class="options-grid">
+
+                <label class="option-item {% if digits %}checked{% endif %}">
+                    <div class="custom-check">
+                        <svg class="check-icon" viewBox="0 0 10 10" fill="none">
+                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="option-label">Digits</span>
+                    <span class="option-icon">123</span>
+                    <input type="checkbox" name="digits" style="display:none;" {% if digits %}checked{% endif %} onchange="toggleStyle(this)">
+                </label>
+
+                <label class="option-item {% if symbols %}checked{% endif %}">
+                    <div class="custom-check">
+                        <svg class="check-icon" viewBox="0 0 10 10" fill="none">
+                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="option-label">Symbols</span>
+                    <span class="option-icon">@#!</span>
+                    <input type="checkbox" name="symbols" style="display:none;" {% if symbols %}checked{% endif %} onchange="toggleStyle(this)">
+                </label>
+
+                <label class="option-item {% if uppercase %}checked{% endif %}">
+                    <div class="custom-check">
+                        <svg class="check-icon" viewBox="0 0 10 10" fill="none">
+                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="option-label">Uppercase</span>
+                    <span class="option-icon">ABC</span>
+                    <input type="checkbox" name="uppercase" style="display:none;" {% if uppercase %}checked{% endif %} onchange="toggleStyle(this)">
+                </label>
+
+                <label class="option-item {% if lowercase %}checked{% endif %}">
+                    <div class="custom-check">
+                        <svg class="check-icon" viewBox="0 0 10 10" fill="none">
+                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="option-label">Lowercase</span>
+                    <span class="option-icon">abc</span>
+                    <input type="checkbox" name="lowercase" style="display:none;" {% if lowercase %}checked{% endif %} onchange="toggleStyle(this)">
+                </label>
+
+            </div>
+
+            <!-- Generate Button -->
+            <button type="submit" class="generate-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+                Generate Password
+            </button>
+        </form>
+
+        <!-- Output — ONLY shown after POST with a generated password -->
+        {% if password %}
+        <div class="output-wrapper">
+            <span class="output-label">Your Generated Password</span>
+            <span class="password-text" id="pwDisplay">{{ password }}</span>
+            <div class="output-actions">
+                <div class="strength-bar">
+                    <span class="strength-label">Strength</span>
+                    <div class="strength-seg {% if password|length >= 10 %}on{% endif %}"></div>
+                    <div class="strength-seg {% if password|length >= 15 %}on{% endif %}"></div>
+                    <div class="strength-seg {% if password|length >= 25 %}on{% endif %}"></div>
+                    <div class="strength-seg {% if password|length >= 35 %}on{% endif %}"></div>
+                </div>
+                <button class="copy-btn" onclick="copyPassword()">Copy</button>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        function toggleStyle(checkbox) {
+            const label = checkbox.closest('.option-item');
+            label.classList.toggle('checked', checkbox.checked);
+        }
+
+        function copyPassword() {
+            const pw = document.getElementById('pwDisplay').innerText;
+            navigator.clipboard.writeText(pw).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = 'Copied!';
+                btn.style.borderColor = '#C8FF00';
+                btn.style.color = '#C8FF00';
+                setTimeout(() => {
+                    btn.innerText = 'Copy';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
